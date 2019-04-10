@@ -95,6 +95,12 @@ if ('trace-mode' in argv && argv.t in modeMap) {
   ao.traceMode = argv.t
 }
 
+// TODO BAM fix insert options.
+//if ('insert' in argv) {
+//  ao.cfg.insertTraceIdsIntoLogs = argv.insert;
+//  ao.cfg.insertTraceIdsIntoMorgan = argv.insert;
+//}
+
 //
 // finally host metrics configuration
 //
