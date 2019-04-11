@@ -20,16 +20,15 @@ FROM node:8-jessie
 #
 
 ARG TODO_TARBALL
-ENV TARBALL=${TODO_TARBALL:-https://api.github.com/repos/bmacnaughton/todomvc-mongodb/tarball}
+ENV TARBALL=${TODO_TARBALL:-https://api.github.com/repos/bmacnaughton/todo/tarball}
+
 # get the application, extract it, move it, and name the dir todo
-RUN cd $HOME && \
-    curl -LkSs $TARBALL -o todo.tar.gz && \
-    mkdir -p tmp && tar -zvxf todo.tar.gz -C tmp && \
-    mv tmp/$(ls -t tmp/ | head -1) $HOME/todo
+WORKDIR /todo
 
-RUN cd $HOME/todo && \
+RUN curl -LkSs $TARBALL -o todo.tar.gz && \
+    tar --strip-components=1 -zvxf todo.tar.gz && \
+    rm todo.tar.gz && \
     npm install .
-
 
 ARG TODO_MONGODB_ADDRESS=mongo_2_4:27017
 ARG TODO_DEBUG=error,warn,patching,debug
@@ -40,17 +39,17 @@ ARG APPOPTICS_DEBUG_LEVEL
 ARG TODO_SERVER_OPTIONS="--ws-ip=localhost:8088 -f express -l pino"
 
 # persisted in the environment
-ENV TODO_MONGODB_ADDRESS=$TODO_MONGODB_ADDRESS \
-    APPOPTICS_SERVICE_KEY=$APPOPTICS_SERVICE_KEY \
+ENV APPOPTICS_SERVICE_KEY=$APPOPTICS_SERVICE_KEY \
     APPOPTICS_COLLECTOR=$APPOPTICS_COLLECTOR \
     APPOPTICS_REPORTER=$APPOPTICS_REPORTER \
     APPOPTICS_DEBUG_LEVEL=$APPOPTICS_DEBUG_LEVEL \
     APPOPTICS_LOG_SETTINGS=$TODO_LOG_LEVEL \
+    TODO_MONGODB_ADDRESS=$TODO_MONGODB_ADDRESS \
     TODO_SERVER_OPTIONS=$TODO_SERVER_OPTIONS
 
 EXPOSE 8088
 
 # set using --rate. server will override --rate with -r, if set in TODO_SERVER_OPTIONS
-CMD ["/bin/bash", "-c", "env | grep APPOP && cd $HOME/todo && node server --db-ip=${TODO_MONGODB_ADDRESS} --rate 1000000 ${TODO_SERVER_OPTIONS}"]
+CMD ["/bin/bash", "-c", "env | grep APPOP && node server --db-ip=${TODO_MONGODB_ADDRESS} --rate 1000000 ${TODO_SERVER_OPTIONS}"]
 
 
