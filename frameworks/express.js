@@ -40,6 +40,7 @@ exports.init = function (options) {
   const httpPort = options.httpPort
   const httpsPort = options.httpsPort
   const traceToken = options.traceToken; // eslint-disable-line
+  const {awsKinesisOpts} = options;
   const logOpts = options.logger || 'morgan:dev';
 
   const {reqLogger, reqLogFormat, intLogFormat} = getLogOptions(logOpts, defaultFormats);
@@ -522,6 +523,23 @@ exports.init = function (options) {
     }
 
     request(options, callback)
+  })
+
+  //==========================================================================
+  // aws kinesis =============================================================
+  //==========================================================================
+
+  // N.B. this requires that AWS CLI has been used to login so that the connections
+  // will be accepted.
+  const awsKinesis = new Requests.AwsKinesis(awsKinesisOpts)
+
+  app.post('/aws/kinesis', function kinesis (req, res) {
+    const p = awsKinesis.put();
+    p.then().catch(e => {
+      const {message, code, time, requestId, statusCode, retryable, retryDelay} = e;
+      logger.error({message, code, time, requestId, statusCode, retryable, retryDelay});
+    })
+    res.json({status: 'received'})
   })
 
   //==========================================================================

@@ -71,7 +71,7 @@ function defaultMissing (host, port) {
   return host
 }
 // for backwards compability look for be_ip before db-ip
-const mongoHost = defaultMissing(argv.be_ip || argv.d, 27017)
+const mongoHost = defaultMissing(argv['db-ip'] || argv.d, 27017)
 
 // for backwards compatibility look for fe_ip before ws-ip
 const webServerHost = defaultMissing(argv.fe_ip || argv.w, 8088)
@@ -175,6 +175,7 @@ const options = {
   httpsPort,
   traceToken,
   logger,
+  awsKinesisOpts: {correctClockSkew: true},
 }
 
 const frameworkSelection = argv.f || 'express'

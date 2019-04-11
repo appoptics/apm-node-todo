@@ -11,11 +11,19 @@ const axios = require('axios')
 const path = require('path')
 const fs = require('fs')
 const Boom = require('boom')
+const winston = require('winston');
 
 
-const {shrink} = require('../lib/utility')
+const {shrink, getLogOptions} = require('../lib/utility')
 
 const settings = {logLevel: 'errors'}
+
+const defaultFormats = {
+  morgan: {req: undefined, int: undefined},
+  winston: {req: undefined, int: 'simple'},
+  bunyan: {req: undefined, int: undefined},
+  pino: {req: undefined, int: undefined},
+}
 
 exports.config = {version}
 exports.settings = settings
@@ -28,6 +36,20 @@ exports.init = async function (options) {
   const httpPort = options.httpPort
   const httpsPort = options.httpsPort // eslint-disable-line
   const traceToken = options.traceToken;
+  const logOpts = options.logger || 'morgan:dev:simple';
+  const {awsKinesisOpts} = options;
+
+  // get the logger and formats. for now ignore a request logger though can implement.
+  // eslint-disable-next-line no-unused-vars
+  const {reqLogger, reqLogFormat, intLogFormat} = getLogOptions(logOpts, defaultFormats);
+
+  // create the internal (not request) logger
+  const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(winston.format.colorize(), winston.format[intLogFormat]()),
+    transports: [new winston.transports.Console()]
+  });
+
 
   const server = Hapi.server({
     port: httpPort,
@@ -422,6 +444,25 @@ exports.init = async function (options) {
         }
 
         request(options, callback)
+      })
+    }
+  })
+
+  //==========================================================================
+  // aws kinesis =============================================================
+  //==========================================================================
+
+  // N.B. this requires that AWS CLI has been used to login so that the connections
+  // will be accepted.
+  const awsKinesis = new Requests.AwsKinesis(awsKinesisOpts);
+
+  server.route({
+    method: 'POST',
+    path: '/aws/kinesis',
+    handler: async function (req, h) {
+      return awsKinesis.put().then(r => r).catch(e => {
+        const {message, code, time, requestId, statusCode, retryable, retryDelay} = e;
+        logger.error({message, code, time, requestId, statusCode, retryable, retryDelay});
       })
     }
   })
