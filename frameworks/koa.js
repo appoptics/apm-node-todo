@@ -464,14 +464,31 @@ exports.init = function (options) {
   // aws kinesis =============================================================
   //==========================================================================
   const awsKinesis = new Requests.AwsKinesis(awsKinesisOpts)
+  let awsKinesisRetries = 0;
 
   router.post('/aws/kinesis', async function kinesis (ctx, next) {
-    const p = awsKinesis.put();
-    p.then().catch(e => {
+    const event = awsKinesis.makeEvent();
+    // log failure but ask for retry if retryable
+    function handleError (e) {
       const {message, code, time, requestId, statusCode, retryable, retryDelay} = e;
-      logger.error({message, code, time, requestId, statusCode, retryable, retryDelay});
-    })
+      logger.warn({message, code, time, requestId, statusCode, retryable, retryDelay});
+      awsKinesisRetries += 1;
+
+      return e.retryable;
+    }
+    awsKinesis.retry(() => awsKinesis.put(event), 3, handleError)
+      .then()
+      .catch(e => {
+        const {message, code, time, requestId, statusCode, retryable, retryDelay} = e;
+        logger.error({message, code, time, requestId, statusCode, retryable, retryDelay});
+      })
     ctx.body = {status: 'received'};
+  })
+
+  router.get('/aws/kinesis', async function kinesis (ctx, next) {
+    const stats = awsKinesis.getStats();
+    stats.retries = awsKinesisRetries;
+    ctx.body = stats;
   })
 
 

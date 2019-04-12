@@ -175,7 +175,7 @@ const options = {
   httpsPort,
   traceToken,
   logger,
-  awsKinesisOpts: {correctClockSkew: true},
+  awsKinesisOpts: {newOptions: {correctClockSkew: true}},
 }
 
 const frameworkSelection = argv.f || 'express'
