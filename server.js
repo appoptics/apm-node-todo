@@ -71,7 +71,7 @@ function defaultMissing (host, port) {
   return host
 }
 // for backwards compability look for be_ip before db-ip
-const mongoHost = defaultMissing(argv.be_ip || argv.d, 27017)
+const mongoHost = defaultMissing(argv['db-ip'] || argv.d, 27017)
 
 // for backwards compatibility look for fe_ip before ws-ip
 const webServerHost = defaultMissing(argv.fe_ip || argv.w, 8088)
@@ -94,6 +94,12 @@ const modeMap = {0: 0, 1: 1, never: 0, always: 1, disabled: 0, enabled: 1}
 if ('trace-mode' in argv && argv.t in modeMap) {
   ao.traceMode = argv.t
 }
+
+// TODO BAM fix insert options.
+//if ('insert' in argv) {
+//  ao.cfg.insertTraceIdsIntoLogs = argv.insert;
+//  ao.cfg.insertTraceIdsIntoMorgan = argv.insert;
+//}
 
 //
 // finally host metrics configuration
@@ -169,6 +175,7 @@ const options = {
   httpsPort,
   traceToken,
   logger,
+  awsKinesisOpts: {newOptions: {correctClockSkew: true}},
 }
 
 const frameworkSelection = argv.f || 'express'

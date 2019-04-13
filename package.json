@@ -7,7 +7,8 @@
   },
   "dependencies": {
     "angular": "^1.7.5",
-    "appoptics-apm": "^6.2.1",
+    "appoptics-apm": "appoptics/appoptics-apm-node#morgan-insertion",
+    "aws-sdk": "^2.437.0",
     "axios": "^0.16.2",
     "body-parser": "^1.18.3",
     "boom": "^7.3.0",
@@ -34,6 +35,7 @@
     "todomvc-common": "~0.1.4",
     "winston": "^3.2.1"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git://github.com/bmacnaughton/todomvc-mongodb.git"
