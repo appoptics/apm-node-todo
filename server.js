@@ -35,7 +35,7 @@ if (argv.help) {
 }
 
 // this sets up with either a real appoptics-apm or a dummy appoptics-apm
-const serverConfig = require('./lib/get-server-config')
+const serverConfig = require('./lib/get-server-config')(argv.appoptics);
 const ao = serverConfig.ao
 
 // standard require files
