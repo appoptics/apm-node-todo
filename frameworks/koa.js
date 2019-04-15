@@ -158,7 +158,7 @@ exports.init = function (options) {
     ctx.body = {status: 'logged'};
   })
 
-  router.get('/process/:what', async function getProcessInfo (ctx) {
+  router.get('/process/:what/:filter?', async function getProcessInfo (ctx) {
     if (ctx.params.what !== 'env') {
       ctx.status = 404;
       return;
