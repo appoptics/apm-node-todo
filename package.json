@@ -1,13 +1,13 @@
 {
   "name": "todo-mongo-appoptics",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "server.js",
   "scripts": {
     "x-start": "node server.js --heroku"
   },
   "dependencies": {
     "angular": "^1.7.5",
-    "appoptics-apm": "appoptics/appoptics-apm-node#morgan-insertion",
+    "appoptics-apm": "github:appoptics/appoptics-apm-node#morgan-insertion",
     "aws-sdk": "^2.437.0",
     "axios": "^0.16.2",
     "body-parser": "^1.18.3",
