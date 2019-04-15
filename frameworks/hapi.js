@@ -150,6 +150,26 @@ exports.init = async function (options) {
     }
   })
 
+  server.route({
+    method: 'GET',
+    path: '/process/{what}/{filter}',
+    handler: async function getProcessInfo (req, h) {
+      if (req.params.what !== 'env') {
+        req.status = 404;
+        return;
+      }
+      const env = Object.assign({}, process.env);
+      if (req.params.filter) {
+        Object.keys(env).forEach(k => {
+          if (k.indexOf(req.params.filter) < 0) {
+            delete env[k];
+          }
+        })
+      }
+      return env;
+    }
+  })
+
   //==============================================================================
   // the todo api ================================================================
   //==============================================================================

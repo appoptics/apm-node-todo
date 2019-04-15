@@ -158,6 +158,22 @@ exports.init = function (options) {
     ctx.body = {status: 'logged'};
   })
 
+  router.get('/process/:what', async function getProcessInfo (ctx) {
+    if (ctx.params.what !== 'env') {
+      ctx.status = 404;
+      return;
+    }
+    const env = Object.assign({}, process.env);
+    if (ctx.params.filter) {
+      Object.keys(env).forEach(k => {
+        if (k.indexOf(ctx.params.filter) < 0) {
+          delete env[k];
+        }
+      })
+    }
+    ctx.body = env;
+  })
+
   //==============================================================================
   // the todo api ================================================================
   //==============================================================================

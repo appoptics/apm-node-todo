@@ -211,6 +211,25 @@ exports.init = function (options) {
     res.end();
   })
 
+
+  app.get('/process/:what/:filter?', async function getProcessInfo (req, res) {
+    // need to make process request module but until then.
+    if (req.params.what !== 'env') {
+      res.statusCode = 404;
+      res.end();
+      return;
+    }
+    const env = Object.assign({}, process.env);
+    if (req.params.filter) {
+      Object.keys(env).forEach(k => {
+        if (k.indexOf(req.params.filter) < 0) {
+          delete env[k];
+        }
+      })
+    }
+    res.json(env);
+  })
+
   //==============================================================================
   // the todo api ================================================================
   //==============================================================================
