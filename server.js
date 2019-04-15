@@ -175,7 +175,7 @@ const options = {
   httpsPort,
   traceToken,
   logger,
-  awsKinesisOpts: {newOptions: {correctClockSkew: true}},
+  awsKinesisOpts: {newOptions: {correctClockSkew: true}}, // maxRetries: n (default is maybe 3?)
 }
 
 const frameworkSelection = argv.f || 'express'
@@ -236,6 +236,7 @@ config.then(r => {
   console.log(`active: apm ${av}, bindings: ${bv} oboe ${ov}`);
 
   console.log(`sample rate ${ao.sampleRate}, sampleMode ${ao.traceMode}`)
+  console.log(`@${new Date().toISOString()}`);
   console.log(dashes)
 
   accounting.startIntervalAverages()
