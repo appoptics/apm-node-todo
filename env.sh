@@ -1,6 +1,10 @@
 ARG=$1
 PARAM=$2
 
+#
+# amazon mongdb 2.4 server is ao-matrix-host-name:1024
+#
+
 token=$AO_TOKEN_STG
 if [ "$ARG" = "prod" ]; then
     if [ -z "$AO_TOKEN_PROD" ]; then
