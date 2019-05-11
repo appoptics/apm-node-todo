@@ -235,7 +235,7 @@ config.then(r => {
   console.log(`${fs} ${fv} ${logger} (logging ${logLevel})`);
   console.log(`active: apm ${av}, bindings: ${bv} oboe ${ov}`);
 
-  console.log(`sample rate ${ao.sampleRate}, sampleMode ${ao.traceMode}`)
+  console.log(`sample rate ${ao.sampleRate}, traceMode ${ao.traceMode}`)
   console.log(`@${new Date().toISOString()}`);
   console.log(dashes)
 
