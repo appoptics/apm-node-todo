@@ -137,6 +137,24 @@ if (argv.metrics) {
 }
 
 //
+// force garbage collections at these intervals if possible
+//
+let gcInterval;
+if (argv.gc) {
+  if (typeof global.gc === 'function') {
+    if (typeof argv.gc === 'number') {
+      gcInterval = setInterval(function () {
+        global.gc();
+      }, argv.gc * 1000);
+    } else {
+      console.error(`--gc=${argv.gc} doesn't specific a number, ignoring`);
+    }
+  } else {
+    console.log('global.gc is not a function, ignoring --gc');
+  }
+}
+
+//
 // finally get the ports needed
 //
 let port
