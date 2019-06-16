@@ -1,13 +1,13 @@
 {
   "name": "todo-mongo-appoptics",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "main": "server.js",
   "scripts": {
     "x-start": "node server.js --heroku"
   },
   "dependencies": {
     "angular": "^1.7.5",
-    "appoptics-apm": "^6.3.1",
+    "appoptics-apm": "^6.5.1",
     "aws-sdk": "^2.437.0",
     "axios": "^0.16.2",
     "body-parser": "^1.18.3",
@@ -17,7 +17,6 @@
     "express-pino-logger": "^4.0.0",
     "express-winston": "^3.1.0",
     "hapi": "^18.1.0",
-    "heapdump": "^0.3.9",
     "http": "0.0.0",
     "inert": "^5.1.2",
     "koa": "^2.7.0",
