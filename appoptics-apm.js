@@ -5,6 +5,7 @@ const key = process.env.AO_TOKEN_STG;
 
 module.exports = {
   enabled: true,
+  traceMode: 1,
   hostnameAlias: '',
   domainPrefix: false,
   serviceKey: `${key}:ao-node-${version}`,
