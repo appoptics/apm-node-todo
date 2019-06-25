@@ -1,4 +1,6 @@
 'use strict'
+
+const v8 = require('v8');
 /**
  * @license
  * Everything in this repo is MIT License unless otherwise specified.
@@ -120,15 +122,35 @@ if (argv.metrics) {
     {image_name: `${hostname}-${ao.version}`}
   )
 
-  const ctx = m.sendOnInterval(5000, () => {
-    return {
-      metrics: {
-        'todo.memory.rss': process.memoryUsage().rss,
-        'todo.cpu.perTransaction': accounting.get().cpuUserPerTx[minutesToMs(1)],
-        'todo.apm.lastRate': accounting.get().lastRate,
-      }
+  function makeMetrics (prefix, object) {
+    const o = {};
+    const properties = Object.keys(object);
+    for (let i = 0; i < properties.length; i++) {
+      o[prefix + properties[i]] = object[properties[i]];
     }
-  })
+    return o;
+  }
+
+  function getMetrics () {
+    // the next two are undefined if no transactions have taken place
+    const metrics = {
+      'todo.cpu.perTransaction': accounting.get().cpuUserPerTx[minutesToMs(1)] || 0,
+      'todo.apm.lastRate': accounting.get().lastRate || 0,
+    };
+    Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
+    Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
+    // skip this array-containing object for now.
+    //Object.assign(metrics, makeMetrics('todo.memory.v8.heap.space.', v8.getHeapSpaceStatistics()));
+    return {metrics};
+  }
+
+  function metricsSent (r) {
+    if (r.statusCode >= 400) {
+      console.log(r);
+    }
+  }
+
+  const ctx = m.sendOnInterval(5000, getMetrics, metricsSent);
 
   // could work on restarting but not sure why
   ctx.promise.catch(e => {
@@ -137,9 +159,10 @@ if (argv.metrics) {
 }
 
 //
-// force garbage collections at these intervals if possible
+// force garbage collections at these intervals if possible. save interval timer so it
+// can be stopped under program control at if that gets implemented.
 //
-let gcInterval;
+let gcInterval; // eslint-disable-line no-unused-vars
 if (argv.gc) {
   if (typeof global.gc === 'function') {
     if (typeof argv.gc === 'number') {
