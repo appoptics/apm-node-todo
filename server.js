@@ -116,9 +116,10 @@ if (argv.metrics) {
   const Metrics = require('./lib/metrics')
 
   // set key, endpoint, and default tags
+  const staging = argv.metrics === process.env.AO_TOKEN_STG ? 'aostg-' : '';
   const m = new Metrics(
     argv.metrics,
-    'https://api.appoptics.com/v1/measurements',
+    `https://${staging}api.appoptics.com/v1/measurements`,
     {image_name: `${hostname}-${ao.version}`}
   )
 
