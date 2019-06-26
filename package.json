@@ -1,6 +1,6 @@
 {
   "name": "todo-mongo-appoptics",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "main": "server.js",
   "scripts": {
     "x-start": "node server.js --heroku"
@@ -26,6 +26,7 @@
     "koa-router": "^7.4.0",
     "koa-send": "^5.0.0",
     "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "mongoose": "^4.13.17",
     "morgan": "^1.9.1",
     "optimist": "*",

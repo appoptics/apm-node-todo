@@ -185,12 +185,22 @@ if (argv.gc) {
 //=====================================================================================
 let hdInterval; // eslint-disable-line no-unused-vars
 if (argv['heap-dump']) {
+  const mkdirp = require('mkdirp');
   const heapdump = require('heapdump');
-  hdInterval = setInterval(function () {
-    heapdump.writeSnapshot(function (err, filename) {
-      // don't do anything right now.
-    })
-  }, argv['heap-dump'] * 60 * 1000);
+  mkdirp('./heapdump', function (err) {
+    if (err) {
+      console.error('cannot mkdirp ./heapdump');
+      return;
+    }
+    hdInterval = setInterval(function () {
+      // make a more intelligible filename
+      const ts = new Date().toISOString();
+      const filename = `./heapdump/heapdump-${ts}.snapshot`;
+      heapdump.writeSnapshot(filename, function (err, filename) {
+        // don't do anything right now.
+      })
+    }, argv['heap-dump'] * 60 * 1000);
+  })
 }
 
 //
