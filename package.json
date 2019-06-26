@@ -1,6 +1,6 @@
 {
   "name": "todo-mongo-appoptics",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "main": "server.js",
   "scripts": {
     "x-start": "node server.js --heroku"
@@ -17,6 +17,7 @@
     "express-pino-logger": "^4.0.0",
     "express-winston": "^3.1.0",
     "hapi": "^18.1.0",
+    "heapdump": "^0.3.14",
     "http": "0.0.0",
     "inert": "^5.1.2",
     "koa": "^2.7.0",

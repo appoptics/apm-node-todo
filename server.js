@@ -108,14 +108,15 @@ if ('trace-mode' in argv && argv.t in modeMap) {
 //
 
 const minutesToMs = m => m * 60000
-//
+//==================================================================================
 // if supplied, metrics must be a valid appoptics token (not service key) or metrics
 // won't be collected.
-//
+//==================================================================================
 if (argv.metrics) {
   const Metrics = require('./lib/metrics')
 
-  // set key, endpoint, and default tags
+  // set key, endpoint, and default tags. kind of kludgy decision-making as to
+  // which endpoint to use; it defaults to production.
   const staging = argv.metrics === process.env.AO_TOKEN_STG ? 'aostg-' : '';
   const m = new Metrics(
     argv.metrics,
@@ -159,10 +160,10 @@ if (argv.metrics) {
   })
 }
 
-//
+//====================================================================================
 // force garbage collections at these intervals if possible. save interval timer so it
 // can be stopped under program control at if that gets implemented.
-//
+//====================================================================================
 let gcInterval; // eslint-disable-line no-unused-vars
 if (argv.gc) {
   if (typeof global.gc === 'function') {
@@ -176,6 +177,20 @@ if (argv.gc) {
   } else {
     console.log('global.gc is not a function, ignoring --gc');
   }
+}
+
+//=====================================================================================
+// if headdumps are requested set them up too. the argument is in minutes so convert to
+// milliseconds for setInterval().
+//=====================================================================================
+let hdInterval; // eslint-disable-line no-unused-vars
+if (argv['heap-dump']) {
+  const heapdump = require('heapdump');
+  hdInterval = setInterval(function () {
+    heapdump.writeSnapshot(function (err, filename) {
+      // don't do anything right now.
+    })
+  }, argv['heap-dump'] * 60 * 1000);
 }
 
 //
