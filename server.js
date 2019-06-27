@@ -195,7 +195,7 @@ if (argv['heap-dump']) {
     hdInterval = setInterval(function () {
       // make a more intelligible filename
       const ts = new Date().toISOString();
-      const filename = `./heapdump/heapdump-${ts}.snapshot`;
+      const filename = `./heapdump/heapdump-${ts}.heapsnapshot`;
       heapdump.writeSnapshot(filename, function (err, filename) {
         // don't do anything right now.
       })
