@@ -15,12 +15,16 @@ To get the app running, follow the instructions below:
 	$ node server.js --ws-ip <IP of machine running the app> --db-ip <IP of machine running mongodb> <br/>
 
 Appoptics
-    server.js has been modified to add settings that make it easier to test AppOptics in a "real" application.
-    It can run using express (default), koa, or hapi as the web server framework. For express the logger to use can be
-    set to morgan (default), pino, winston, or bunyan. A quick overview of options can be seen by using the `-h` cli
-    option.
+    server.js has been modified to add settings that make it easier to test the appoptics-apm agent in
+    a "real" application.
+    This can run roughly parallel implementations using express (default), koa, or hapi as the web server
+    framework. Not all frameworks support all loggers, but the logger to use can also be set to morgan
+    (default), pino, winston, or bunyan. A quick overview of server options can be seen by using the `-h`
+    cli option. Complete documentation of command line options is available by reading the code. the
+    `get-cli-options.js` file is a good place to start.
 
-    The server responds to many URLs in order to exercise various aspects of AppOptics. The code is the documentation.
+    The server responds to many URLs in order to exercise various aspects of AppOptics. The code is the
+    documentation.
 
 example - sample rate of 100%, serve port 8889 on localhost: <br/>
   `$ node server -r 100 --ws-ip=localhost:8889`
