@@ -35,7 +35,7 @@ exports.init = async function (options) {
   const host = options.host
   const httpPort = options.httpPort
   const httpsPort = options.httpsPort // eslint-disable-line
-  const traceToken = options.traceToken;
+  const traceToken = options.traceToken || (() => '');
   const logOpts = options.logger || 'morgan:dev:simple';
   const {awsKinesisOpts} = options;
 
@@ -502,6 +502,12 @@ exports.init = async function (options) {
         return 'index.html';
       }
     }
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/zzz',
+    async handler () {return '?'.repeat(20000)},
   })
 
   // start the server and return it's promise

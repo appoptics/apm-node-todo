@@ -38,7 +38,7 @@ elif [[ "$ARG" = "java" ]]; then
     if [[ -z "$PARAM" ]]; then
         export APPOPTICS_REPORTER=ssl
         export APPOPTICS_COLLECTOR=localhost:12222
-        export APPOPTICS_TRUSTEDPATH=./test/certs/java-collector.crt
+        export APPOPTICS_TRUSTEDPATH=/home/bruce/solarwinds/oboe-test/collectors/java-collector/test-collector.crt
         unset TODO_TRUSTEDPATH
     elif [[ "$PARAM" = "docker" ]]; then
         # set up environment for docker-compose build to point
