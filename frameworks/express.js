@@ -273,7 +273,9 @@ exports.init = function (options) {
     })
   }
 
-  // delete a todo and return all todos after deletion
+  // delete a todo and return all todos after deletion. this is
+  // done because more todos may have been created after the delete
+  // operation.
   app.delete('/api/todos/:todo_id', deleteTodo)
 
   function deleteTodo (req, res) {

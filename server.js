@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict'
 
 const v8 = require('v8');
@@ -33,7 +34,7 @@ const v8 = require('v8');
 const {argv, showHelp} = require('./lib/get-cli-options')
 if (argv.help) {
   showHelp()
-  process.exit(1)
+  process.exit(0)
 }
 
 // this sets up with either a real appoptics-apm or a dummy appoptics-apm
@@ -73,7 +74,7 @@ function defaultMissing (host, port) {
   return host
 }
 // for backwards compability look for be_ip before db-ip
-const mongoHost = defaultMissing(argv['db-ip'] || argv.d, 27017)
+const mongoHost = defaultMissing(process.env.AO_MONGODB || argv['db-ip'] || argv.d, 27017)
 
 // for backwards compatibility look for fe_ip before ws-ip
 const webServerHost = defaultMissing(argv.fe_ip || argv.w, 8088)
@@ -213,6 +214,8 @@ if (!argv.heroku) {
   host = webServerHost.split(':')
   port = +host[1]
   host = host[0]
+} else if (process.env.WEBSITE_SITE_NAME) {
+  port = process.env.PORT;
 } else {
   port = process.env.PORT
 }
