@@ -210,10 +210,12 @@ if (argv['heap-dump']) {
 let port
 let host
 let httpsPort = 8443;
-if (!argv.heroku && !process.env.PORT) {
+if (!argv.heroku) {
   host = webServerHost.split(':')
   port = +host[1]
   host = host[0]
+} else if (process.env.WEBSITE_SITE_NAME) {
+  port = process.env.PORT;
 } else {
   port = process.env.PORT
 }
