@@ -1,16 +1,18 @@
+'use strict';
+
 const http = require('http')
 const fs = require('fs')
 const argv = require('minimist')(process.argv)
 
-const ao = require('appoptics')
+const ao = require('appoptics'); // eslint-disable-line no-unused-vars
 
 const port = argv.p || argv.port || 8881
 const host = argv.host || 'localhost'
 const show = argv.s || argv.show
 
-var counters = {}
+const counters = {}
 
-var log = function (string, cb) {cb(null, string.length)}
+let log = function (string, cb) {cb(null, string.length)}
 
 fs.open('./tiny-server-log', 'a+', function (err, fd) {
   if (!err) {
@@ -20,9 +22,9 @@ fs.open('./tiny-server-log', 'a+', function (err, fd) {
   }
 })
 
-var wip
+let wip
 
-var server = http.createServer(function (req, res) {
+const server = http.createServer(function (req, res) {
   const {headers, method, url} = req
 
   console.log(method, 'to', url)
@@ -35,7 +37,7 @@ var server = http.createServer(function (req, res) {
     }).on('end', () => {
       body = Buffer.concat(body).toString()
       body = JSON.parse(body)
-      var entry = [new Date(), JSON.stringify(body), '\n'].join(' ')
+      const entry = [new Date(), JSON.stringify(body), '\n'].join(' ')
 
       if (!wip) {
         wip = true
@@ -44,7 +46,7 @@ var server = http.createServer(function (req, res) {
         })
       }
 
-      let reqURL = body.url
+      const reqURL = body.url
       if (!(reqURL in counters)) {
         counters[reqURL] = 0
       }

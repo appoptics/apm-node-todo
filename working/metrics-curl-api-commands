@@ -1,0 +1,32 @@
+curl \
+  -i \
+  -u $AO_TOKEN_PROD: \
+  -X GET \
+  'https://api.appoptics.com/v1/services'
+
+
+curl \
+  -v \
+  -u $AO_TOKEN_BENCH: \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tags": {
+      "image_name": "todo-mvc-metrics-test"
+    },
+    "measurements": [
+      {
+        "name": "todo.memory.rss",
+        "value": 65
+      }
+    ]
+  }' \
+  -X POST \
+  https://api.appoptics.com/v1/measurements
+
+curl \
+--trace-ascii - \
+-u $AO_TOKEN_BENCH: \
+-H "Content-Type: application/json" \
+-d '{"tags": {"image_name": "todo-mvc-metrics-test"}, "measurements": [{"name": "todo.memory.rss", "value": 65}]}' \
+-X POST \
+https://api.appoptics.com/v1/measurements
