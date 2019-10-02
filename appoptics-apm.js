@@ -1,7 +1,15 @@
 'use strict'
 
 const {version} = require('appoptics-apm/package.json');
-const key = process.env.AO_TOKEN_STG;
+let key;
+
+// try to use the right key for the endpoint.
+const collector = process.env.APPOPTICS_COLLECTOR;
+if (collector && collector.startsWith('collector-st')) {
+  key = process.env.AO_TOKEN_STG;
+} else {
+  key = process.env.AO_TOKEN_PROD;
+}
 
 module.exports = {
   enabled: true,
