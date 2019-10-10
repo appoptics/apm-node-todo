@@ -1,14 +1,18 @@
 'use strict'
 
 const {version} = require('appoptics-apm/package.json');
-let key;
+let serviceKey;
 
 // try to use the right key for the endpoint.
 const collector = process.env.APPOPTICS_COLLECTOR;
 if (collector && collector.startsWith('collector-st')) {
-  key = process.env.AO_TOKEN_STG;
+  serviceKey = process.env.AO_TOKEN_STG;
 } else {
-  key = process.env.AO_TOKEN_PROD;
+  serviceKey = process.env.AO_TOKEN_PROD;
+}
+
+if (serviceKey) {
+  serviceKey = `${serviceKey}:ao-node-${version}`
 }
 
 module.exports = {
@@ -16,7 +20,7 @@ module.exports = {
   traceMode: 1,
   hostnameAlias: '',
   domainPrefix: false,
-  serviceKey: `${key}:ao-node-${version}`,
+  serviceKey,
   insertTraceIdsIntoLogs: undefined,
   insertTraceIdsIntoMorgan: undefined,
   createTraceIdsToken: undefined,
