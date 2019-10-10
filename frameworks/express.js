@@ -156,6 +156,7 @@ exports.init = function (options) {
   //==============================================================================
 
   app.all('*', function allRoutes (req, res, next) {
+    // count each request
     accounting.count()
     next()
   })
