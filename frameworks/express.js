@@ -10,6 +10,7 @@ const winston = require('winston');
 const app = new Express()
 
 const http = require('http')
+const https = require('https');
 const url = require('url')
 const path = require('path')
 const fs = require('fs')
@@ -485,8 +486,10 @@ exports.init = function (options) {
       options.headers = {'X-Trace': req.headers['X-Trace']}
     }
 
+    const requestor = (options.protocol === 'http' ? http : https).request;
+
     // now do the outbound request and get the inbound response
-    const oreq = http.request(options, function (ires) {
+    const oreq = requestor(options, function (ires) {
       let body = ''
       ires.on('data', function (d) {
         body += d
