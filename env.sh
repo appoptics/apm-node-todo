@@ -7,11 +7,11 @@ PARAM=$2
 
 token=$AO_TOKEN_STG
 if [ "$ARG" = "prod" ]; then
-    if [ -z "$AO_TOKEN_PROD" ]; then
-        echo "AO_TOKEN_PROD must be defined for the \"prod\" argument"
+    if [ -z "$AO_SWOKEN_PROD" ]; then
+        echo "AO_SWOKEN_PROD must be defined for the \"prod\" argument"
         return
     fi
-    token=$AO_TOKEN_PROD
+    token=$AO_SWOKEN_PROD
 elif [ -z "$AO_TOKEN_STG" ]; then
     echo "AO_TOKEN_STG must be defined for any argument other than \"prod\""
     return
