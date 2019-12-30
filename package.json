@@ -1,6 +1,6 @@
 {
   "name": "todo-mongo-appoptics",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "main": "server.js",
   "scripts": {
     "x-start": "node server.js --heroku"
@@ -13,7 +13,7 @@
     "@feathersjs/feathers": "^3.3.1",
     "@feathersjs/socketio": "^3.2.9",
     "angular": "^1.7.5",
-    "appoptics-apm": "https://github.com/appoptics/appoptics-apm-node/tarball/vX.X.X",
+    "appoptics-apm": "https://github.com/appoptics/appoptics-apm-node/tarball/vNext",
     "aws-sdk": "^2.437.0",
     "axios": "^0.16.2",
     "body-parser": "^1.18.3",
@@ -32,9 +32,10 @@
     "koa-morgan": "^1.0.1",
     "koa-router": "^7.4.0",
     "koa-send": "^5.0.0",
+    "linux-os-info": "^2.0.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "mongoose": "^4.13.19",
+    "mongoose": "^5.0.0",
     "morgan": "^1.9.1",
     "optimist": "*",
     "randomstring": "^1.1.5",
