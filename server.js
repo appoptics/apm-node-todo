@@ -142,8 +142,16 @@ if (argv.metrics) {
     };
     Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
     Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
-    // skip this array-containing object for now.
-    //Object.assign(metrics, makeMetrics('todo.memory.v8.heap.space.', v8.getHeapSpaceStatistics()));
+    // skip this 8 element array, each with 4 duplicated stats name, so 32-entries of
+    // v8 detail that programs have little knowledge of or control over. maybe a config
+    // option if someone is interested.
+    //
+    // const hss = v8.getHeapSpaceStatistics();
+    // hss.forEach(s => {
+    //   const name = s.space_name;
+    //   delete s.space_name;
+    //   Object.assign(metrics, makeMetrics(`todo.memory.v8.heap.space.${name}`, s));
+    // })
     return {metrics};
   }
 

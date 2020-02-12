@@ -308,6 +308,46 @@ exports.init = function (options) {
   })
 
   //
+  // start/stop cpu profiling
+  //
+  const profiler = new Requests.Profiler({noProfileFile: true});
+  app.get('/profile/:action/:name/:seconds?', function profileRequest (req, res) {
+    if (req.params.action === 'start') {
+      const r = profiler.start(req.params.name, true);
+
+      // automatic stop after n seconds. just log results
+      // to console.
+      if (req.params.seconds) {
+        const time = (+req.params.seconds || 60) * 1000;
+        setTimeout(() => {
+          profiler.stop(req.params.name)
+            .then(r => {
+              console.log(r);
+            })
+            .catch(r => {
+              console.log(r);
+            })
+        }, time);
+      }
+
+      res.statusCode = r.status || 200;
+      res.json(r);
+    } else if (req.params.action === 'stop') {
+      profiler.stop(req.params.name)
+        .then(r => {
+          res.json(r);
+        })
+        .catch(r => {
+          res.statusCode = r.status || 500;
+          res.json(r);
+        })
+    } else {
+      res.statusCode = 404;
+      res.json({status: 404});
+    }
+  });
+
+  //
   // delay for a fixed period of time
   //
   const delay = new Requests.Delay()
@@ -475,11 +515,11 @@ exports.init = function (options) {
     const q = req.query.target
 
     if (!q) {
-      logger.info('this is the end of the chain');
+      //logger.info('this is the end of the chain');
       res.send('this is the end!\n')
       return
     }
-    logger.info(`chain about to fetch ${q}`);
+    //logger.info(`chain about to fetch ${q}`);
 
     const options = url.parse(q)
     if (req.headers['X-Trace']) {
@@ -499,7 +539,7 @@ exports.init = function (options) {
         const p = makePrefix(q)
         const h = JSON.stringify(ires.headers)
         res.send(p + h + '\nbody: ' + body + '\n')
-        logger.info('chain sent body');
+        //logger.info('chain sent body');
       })
       ires.on('error', function (e) {
         logger.error('chain got an error', e);
