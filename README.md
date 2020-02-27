@@ -26,15 +26,27 @@ Appoptics
     The server responds to many URLs in order to exercise various aspects of AppOptics. The code is the
     documentation.
 
-example - sample rate of 100%, serve port 8889 on localhost: <br/>
-  `$ node server -r 100 --ws-ip=localhost:8889`
+example - sample rate of 100%, serve port 8088 on localhost: <br/>
+  `$ node server -r 100 --ws-ip=localhost:8088`
 
 example - check the server config: <br/>
-  `$ curl localhost:8889/config`
+  `$ curl localhost:8088/config`
+
+example - change the server config on the fly: <br/>
+  `$ curl -X PUT localhost:8088/config/metrics/stop`
+
+example - change the metric interval using server config: <br/>
+  `$ curl -X PUT localhost:8088/config/metrics/reset:30000`
+
+(see lib/requests/config.js for dynamic configuration options.)
 
 ## generating a load against the server
 
 see bmacnaughton/multiload for a test driver that can perform transactions at specific rates against this server.
+
+## todo for todo
+
+- handle mongodb deprecations warnings - http://mongodb.github.io/node-mongodb-native/3.3/reference/unified-topology/
 
 ## License
 
