@@ -475,11 +475,11 @@ exports.init = function (options) {
     const q = req.query.target
 
     if (!q) {
-      logger.info('this is the end of the chain');
+      //logger.info('this is the end of the chain');
       res.send('this is the end!\n')
       return
     }
-    logger.info(`chain about to fetch ${q}`);
+    //logger.info(`chain about to fetch ${q}`);
 
     const options = url.parse(q)
     if (req.headers['X-Trace']) {
@@ -499,7 +499,7 @@ exports.init = function (options) {
         const p = makePrefix(q)
         const h = JSON.stringify(ires.headers)
         res.send(p + h + '\nbody: ' + body + '\n')
-        logger.info('chain sent body');
+        //logger.info('chain sent body');
       })
       ires.on('error', function (e) {
         logger.error('chain got an error', e);
