@@ -37,6 +37,8 @@ if (argv.help) {
   process.exit(0)
 }
 
+const staging = (process.env.APPOPTICS_COLLECTOR || '').startsWith('collector-stg.');
+
 // this sets up with either a real appoptics-apm or a dummy appoptics-apm
 const serverConfig = require('./lib/get-server-config')(argv.appoptics);
 const ao = serverConfig.ao
@@ -118,10 +120,10 @@ if (argv.metrics) {
 
   // set key, endpoint, and default tags. kind of kludgy decision-making as to
   // which endpoint to use; it defaults to production.
-  const staging = argv.metrics === process.env.AO_TOKEN_STG ? 'aostg-' : '';
+  const prefix = staging ? 'aostg-' : '';
   const m = new Metrics(
     argv.metrics,
-    `https://${staging}api.appoptics.com/v1/measurements`,
+    `https://${prefix}api.appoptics.com/v1/measurements`,
     {image_name: `${hostname}-${ao.version}`}
   )
 
@@ -160,6 +162,15 @@ if (argv.metrics) {
     console.log(e)
   })
 }
+
+// setup annotations as well
+const Annotations = require('./lib/annotations');
+const serviceKey = process.env.APPOPTICS_SERVICE_KEY.split(':')[0];
+const annotationsOpts = {};
+if (staging) {
+  annotationsOpts.url = 'https://my-stg.appoptics.com/v1/annotations';
+}
+const annotations = new Annotations(serviceKey, annotationsOpts);
 
 //====================================================================================
 // force garbage collections at these intervals if possible. save interval timer so it
@@ -310,6 +321,16 @@ config.then(r => {
   console.log(dashes)
 
   accounting.startIntervalAverages()
+
+  // finally create an annotation detailing what started.
+  const streamName = 'todo-server-started';
+  const title = `av ${av}, bv ${bv}, ov ${ov}`;
+  const os = require('os');
+  const opts = {source: os.hostname()};
+  if (argv.desc) {
+    opts.description = argv.desc;
+  }
+  annotations.send(streamName, title, opts);
 
 }).catch(e => {
   console.error(`${frameworkSelection} framework initialization error`, e)
