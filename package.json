@@ -1,6 +1,6 @@
 {
   "name": "todo",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "main": "server.js",
   "scripts": {
     "x-start": "node server.js --heroku"
@@ -13,7 +13,7 @@
     "@feathersjs/feathers": "^3.3.1",
     "@feathersjs/socketio": "^3.2.9",
     "angular": "^1.7.5",
-    "appoptics-apm": "https://github.com/appoptics/appoptics-apm-node/tarball/metrics-array",
+    "appoptics-apm": "^7.1.0",
     "aws-sdk": "^2.437.0",
     "axios": "^0.16.2",
     "body-parser": "^1.18.3",
@@ -35,7 +35,7 @@
     "linux-os-info": "^2.0.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "mongoose": "^5.0.0",
+    "mongoose": "^5.9.1",
     "morgan": "^1.9.1",
     "optimist": "^0.6.1",
     "randomstring": "^1.1.5",
