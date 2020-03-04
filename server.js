@@ -143,8 +143,10 @@ if (argv.metrics) {
 
   function getMetrics () {
     // the next two are undefined if no transactions have taken place
+    const stats = accounting.get();
     const metrics = {
-      'todo.cpu.perTransaction': accounting.get().cpuUserPerTx[minutesToMs(1)] || 0,
+      'todo.cpuUser.perTransaction': stats.cpuUserPerTx[minutesToMs(1)] || 0,
+      'todo.cpuSystem.perTransaction': stats.cpuSystemPerTx[minutesToMs(1)] || 0,
       'todo.apm.lastRate': accounting.get().lastRate || 0,
     };
     Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
@@ -224,7 +226,7 @@ if (argv['heap-dump']) {
 //
 let port
 let host
-let httpsPort = 8443;
+let httpsPort = argv['https-port'];
 if (!argv.heroku) {
   host = webServerHost.split(':')
   port = +host[1]
@@ -258,7 +260,7 @@ const options = {
   todoapi,
   host,
   httpPort: port,
-  httpsPort,
+  httpsPort: !argv['no-https'] && httpsPort,
   traceToken,
   logger,
   awsKinesisOpts: {newOptions: {correctClockSkew: true}}, // maxRetries: n (default is maybe 3?)
@@ -297,7 +299,9 @@ config.then(r => {
   // https is optional
   if (r.httpsStatus) {
     console.warn('https failed to initialize', r.httpsStatus)
-    httpsPort = 'NA'
+    httpsPort = 'NA';
+  } else if (argv['no-https']) {
+    httpsPort = 'NA';
   }
 
   // http is not optional
