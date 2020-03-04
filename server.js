@@ -106,6 +106,8 @@ if ('trace-mode' in argv && argv.t in modeMap) {
 //  ao.cfg.insertTraceIdsIntoMorgan = argv.insert;
 //}
 
+const [serviceKey, service] = process.env.APPOPTICS_SERVICE_KEY.split(':');
+
 //
 // finally host metrics configuration
 //
@@ -124,7 +126,10 @@ if (argv.metrics) {
   const m = new Metrics(
     argv.metrics,
     `https://${prefix}api.appoptics.com/v1/measurements`,
-    {image_name: `${hostname}-${ao.version}`}
+    {
+      image_name: `${hostname}-${ao.version}`,
+      service,
+    }
   )
 
   function makeMetrics (prefix, object) {
@@ -165,7 +170,6 @@ if (argv.metrics) {
 
 // setup annotations as well
 const Annotations = require('./lib/annotations');
-const serviceKey = process.env.APPOPTICS_SERVICE_KEY.split(':')[0];
 const annotationsOpts = {};
 if (staging) {
   annotationsOpts.url = 'https://my-stg.appoptics.com/v1/annotations';
@@ -240,8 +244,9 @@ const staticFiles = {
   '/bower_components': '/bower_components'
 }
 
-// get the lower level api that knows nothing of web server frameworks
-const todoapi = new Requests.TodoApi(mongoHost)
+// get the lower level api that knows nothing of web server frameworks.
+const dbName = process.env.TODO_DBNAME || service.replace(/\./g, '-');
+const todoapi = new Requests.TodoApi(mongoHost, {dbName});
 
 // get the Event.last formatter for insertion into logs
 const traceToken = ao.getFormattedTraceId;
