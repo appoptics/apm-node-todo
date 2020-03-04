@@ -105,8 +105,8 @@ if ('trace-mode' in argv && argv.t in modeMap) {
 //  ao.cfg.insertTraceIdsIntoLogs = argv.insert;
 //  ao.cfg.insertTraceIdsIntoMorgan = argv.insert;
 //}
-
-const [serviceKey, service] = process.env.APPOPTICS_SERVICE_KEY.split(':');
+const sk = process.env.APPOPTICS_SERVICE_KEY || 'xyzzy:xyzzy';
+const [serviceKey, service] = sk.split(':');
 
 //
 // finally host metrics configuration
