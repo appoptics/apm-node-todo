@@ -49,7 +49,8 @@ const fs = require('fs')
 // request wraps the individual request constructors and fills in ao for them
 // there's certainly a better way to do this but i haven't figured it out yet.
 const Requests = require('./lib/requests')(ao)
-const accounting = new Requests.Accounting()
+const kAcctSecs = 10;
+const accounting = new Requests.Accounting({interval: kAcctSecs});
 
 // get host name for metrics and general status/config
 let hostname = fs.readFileSync('/etc/hostname', 'utf8')
@@ -112,7 +113,6 @@ const [serviceKey, service] = sk.split(':');
 // finally host metrics configuration
 //
 
-const minutesToMs = m => m * 60000
 //==================================================================================
 // if supplied, metrics must be a valid appoptics token (not service key) or metrics
 // won't be collected.
@@ -143,11 +143,13 @@ if (argv.metrics) {
 
   function getMetrics () {
     // the next two are undefined if no transactions have taken place
-    const stats = accounting.get();
+    const stats = accounting.get(kAcctSecs);
     const metrics = {
-      'todo.cpuUser.perTransaction': stats.cpuUserPerTx[minutesToMs(1)] || 0,
-      'todo.cpuSystem.perTransaction': stats.cpuSystemPerTx[minutesToMs(1)] || 0,
-      'todo.apm.lastRate': accounting.get().lastRate || 0,
+      [`todo.${kAcctSecs}sec.total.transactions`]: stats.totalAverages,
+      [`todo.${kAcctSecs}sec.total.sampled`]: stats.sampledAverages,
+      [`todo.${kAcctSecs}sec.cpuUser.perTransaction`]: stats.cpuUserPerTx,
+      [`todo.${kAcctSecs}sec.cpuSystem.perTransaction`]: stats.cpuSystemPerTx,
+      [`todo.${kAcctSecs}sec.apm.lastRate`]: stats.lastRate || 0,
     };
     Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
     Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
