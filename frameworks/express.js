@@ -164,7 +164,7 @@ exports.init = function (options) {
 
   app.get('/accounting', function getAccounting (req, res) {
     //process.nextTick(() => res.json(accounting.get()))
-    res.json(accounting.get())
+    res.json(accounting.get(accounting.interval));
   })
 
 

@@ -84,7 +84,8 @@ exports.init = async function (options) {
 
 
   // capture each request as it comes in but do nothing other than account for it.
-  // hard won info. lots of api docs. not much on how to do common tasks. https://hapijs.com/api#server.ext()
+  // hard won info. lots of api docs. not much on how to do common tasks.
+  // https://hapijs.com/api#server.ext()
   server.ext({
     type: 'onRequest',
     method: async function (req, h) {
@@ -106,7 +107,7 @@ exports.init = async function (options) {
     method: 'GET',
     path: '/accounting',
     handler (req, h) {
-      return accounting.get()
+      return accounting.get(accounting.interval);
     }
   })
 
