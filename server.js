@@ -150,6 +150,10 @@ if (argv.metrics) {
       [`todo.${kAcctSecs}sec.cpuUser.perTransaction`]: stats.cpuUserPerTx,
       [`todo.${kAcctSecs}sec.cpuSystem.perTransaction`]: stats.cpuSystemPerTx,
       [`todo.${kAcctSecs}sec.apm.lastRate`]: stats.lastRate || 0,
+      [`todo.${kAcctSecs}sec.fillRequests`]: stats.fillRequests,
+      [`todo.${kAcctSecs}sec.copyFills`]: stats.copyFills,
+      [`todo.${kAcctSecs}sec.syncFills`]: stats.syncFills,
+      [`todo.${kAcctSecs}sec.bufferFills`]: stats.bufferFills,
     };
     Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
     Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
