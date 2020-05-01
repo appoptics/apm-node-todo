@@ -189,6 +189,7 @@ exports.init = function (options) {
     res.json(r)
   })
 
+  // oboe
   const oboe = new Requests.Oboe()
 
   app.get('/oboe/:what', function getOboe (req, res) {
@@ -202,6 +203,7 @@ exports.init = function (options) {
     res.json(r)
   })
 
+  // log a message
   app.get('/log/:level/:string', function doLog (req, res) {
     const level = req.params.level;
     if (level !== 'error' && level !== 'warn' && level !== 'info') {
@@ -213,7 +215,31 @@ exports.init = function (options) {
     res.end();
   })
 
+  // perf hooks
+  const perfhooks = new Requests.PerfHooks();
 
+  app.put('/perftrace/enable/:what', function perfhookEnable (req, res) {
+    const r = perfhooks.enable(req.params.what);
+    res.statusCode = r.status || 200;
+    res.json(r);
+    res.end();
+  });
+
+  app.put('/perftrace/disable/:what', function perfhookDisable (req, res) {
+    const r = perfhooks.disable(req.params.what);
+    res.statusCode = r.status || 200;
+    res.json(r);
+    res.end();
+  });
+
+  app.get('/perftrace/fetch/:what', function perfhookFetch (req, res) {
+    const r = perfhooks.fetch(req.params.what);
+    res.statusCode = r.status || 200;
+    res.json(r);
+    res.end();
+  });
+
+  // process
   app.get('/process/:what/:filter?', async function getProcessInfo (req, res) {
     // need to make process request module but until then.
     if (req.params.what !== 'env') {
@@ -486,7 +512,7 @@ exports.init = function (options) {
       options.headers = {'X-Trace': req.headers['X-Trace']}
     }
 
-    const requestor = (options.protocol === 'http' ? http : https).request;
+    const requestor = (options.protocol === 'http:' ? http : https).request;
 
     // now do the outbound request and get the inbound response
     const oreq = requestor(options, function (ires) {
