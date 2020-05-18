@@ -141,8 +141,18 @@ if (argv.metrics) {
     return o;
   }
 
+  function addUrlMetrics (prefix, urlMetricsMap, metrics) {
+    for (let url of urlMetricsMap.keys()) {
+      const m = urlMetricsMap.get(url);
+      url = url.replace(/\//g, ':');
+      url = url.replace(/\*/g, '-');
+      metrics[prefix + url + '.count'] = m.count;
+      metrics[prefix + url + '.time'] = m.time / 1e3 / m.count;
+      metrics[prefix + url + '.events'] = m.events / m.count;
+    }
+  }
+
   function getMetrics () {
-    // the next two are undefined if no transactions have taken place
     const stats = accounting.get(kAcctSecs);
     const metrics = {
       [`todo.${kAcctSecs}sec.total.transactions`]: stats.totalAverages,
@@ -157,8 +167,28 @@ if (argv.metrics) {
     };
     Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
     Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
+
+    if (ao.addon) {
+      if (ao.notifications && ao.addon.Notifier.get) {
+        metrics['todo.notifications.itemCount'] = ao.addon.Notifier.get(4);
+      }
+      if (ao.addon.Event.getEventStats) {
+        const es = ao.addon.Event.getEventStats();
+        metrics['todo.internal.eventCount'] = es.activeCount;
+      }
+    }
     // skip this array-containing object for now.
     //Object.assign(metrics, makeMetrics('todo.memory.v8.heap.space.', v8.getHeapSpaceStatistics()));
+    //const spanMetrics = ao.Span.getMetrics('clear');
+    //Object.assign(metrics, makeMetrics('todo.span.', spanMetrics));
+    //metrics['todo.span.msPerTopSpan'] = spanMetrics.topSpanTime / 1e3 / spanMetrics.topSpanExits;
+    //metrics['todo.span.msPerHttpSpan'] = spanMetrics.httpSpanTime / 1e3 / spanMetrics.httpSpanCount;
+    //metrics['todo.span.eventsPerSpan'] = spanMetrics.topSpanEvents / spanMetrics.topSpanExits;
+    //
+    //if (ao.Span.urlMap) {
+    //  addUrlMetrics('todo.span.endpoints.', ao.Span.urlMap, metrics);
+    //  ao.Span.urlMap = new Map();
+    //}
     return {metrics};
   }
 
@@ -168,7 +198,7 @@ if (argv.metrics) {
     }
   }
 
-  const ctx = m.sendOnInterval(5000, getMetrics, metricsSent);
+  const ctx = m.sendOnInterval(10000, getMetrics, metricsSent);
 
   // could work on restarting but not sure why
   ctx.promise.catch(e => {

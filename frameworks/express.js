@@ -189,6 +189,16 @@ exports.init = function (options) {
     res.json(r)
   })
 
+  // stats
+  const stats = new Requests.Stats();
+  app.get('/stats', function getStats (req, res) {
+    const r = stats.get();
+    if (r.status && r.status !== 200) {
+      res.statusCode = r.status;
+    }
+    res.json(r);
+  })
+
   // oboe
   const oboe = new Requests.Oboe()
 
@@ -618,6 +628,8 @@ exports.init = function (options) {
   const promises = []
   let httpStatus
   let httpsStatus
+  let httpServer;
+  let httpsServer;
 
   // it's kind of funky but let the caller decide whether a failure to
   // listen on a port is OK or not. that's why the promises are always
@@ -629,7 +641,7 @@ exports.init = function (options) {
       }
       resolve(args)
     }
-    app.listen(httpPort, host).on('listening', x).on('error', x)
+    httpServer = app.listen(httpPort, host).on('listening', x).on('error', x);
   })
   promises.push(p1)
 
@@ -641,7 +653,7 @@ exports.init = function (options) {
         }
         resolve(args)
       }
-      app.listen(httpsPort, host).on('listening', x).on('error', x)
+      httpsServer = app.listen(httpsPort, host).on('listening', x).on('error', x);
     })
     promises.push(p2)
   }
@@ -650,7 +662,9 @@ exports.init = function (options) {
     return {
       server: app,
       httpStatus,
+      httpServer,
       httpsStatus,
+      httpsServer,
     }
   })
 
