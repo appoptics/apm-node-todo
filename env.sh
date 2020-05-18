@@ -12,6 +12,14 @@ if [ "$ARG" = "prod" ]; then
         return
     fi
     token=$AO_SWOKEN_PROD
+
+elif [ "$ARG" = "bench" ]; then
+    if [ -z "$AO_TOKEN_BENCH" ]; then
+        echo "AO_TOKEN_BENCH must be defined for the \"bench\" argument"
+        return
+    fi
+    token=$AO_TOKEN_BENCH
+
 elif [ -z "$AO_TOKEN_STG" ]; then
     echo "AO_TOKEN_STG must be defined for any argument other than \"prod\""
     return
@@ -33,35 +41,15 @@ if [[ -z "$ARG" ]]; then
     echo "you may also use the argument debug to define additional"
     echo "debugging variables"
     echo
-elif [[ "$ARG" = "java" ]]; then
-    echo "setting environment variables for standard java-collector"
+elif [ "$ARG" = "java" -o "$ARG" = "bench" ]; then
+    echo "setting environment variables for local java-collector using grpc"
     if [[ -z "$PARAM" ]]; then
         export APPOPTICS_REPORTER=ssl
-        export APPOPTICS_COLLECTOR=localhost:12222
-        export APPOPTICS_TRUSTEDPATH=/home/bruce/solarwinds/oboe-test/collectors/java-collector/test-collector.crt
+        export APPOPTICS_COLLECTOR=localhost:12223
+        export APPOPTICS_TRUSTEDPATH=$PWD/../../appoptics/ao-agent/test/java-collector/server-grpc.crt
         unset TODO_TRUSTEDPATH
-    elif [[ "$PARAM" = "docker" ]]; then
-        # set up environment for docker-compose build to point
-        # appoptics at java-collector in containers
-        export TODO_COLLECTOR=java-collector:12222
-        export TODO_TRUSTEDPATH=/todo/certs/java-collector.crt
-        export APPOPTICS_TRUSTEDPATH=/home/bruce/solarwinds/oboe-test/benchmark/node/collectors/java-collector/test-collector.crt
     else
         echo Invalid parameter "$PARAM" for argument "java"
-    fi
-elif [[ "$ARG" = "scribe" ]]; then
-    echo "setting environment variables for standard scribe-collector"
-    if [[ -z "$PARAM" ]]; then
-        export APPOPTICS_REPORTER=ssl
-        export APPOPTICS_COLLECTOR=localhost:4444
-        export APPOPTICS_TRUSTEDPATH=./test/certs/scribe-collector.crt
-        unset TODO_TRUSTEDPATH
-    elif [[ "$PARAM" = "docker" ]]; then
-        # used by docker-compose
-        export TODO_COLLECTOR=scribe-collector:4444
-        export TODO_TRUSTEDPATH=/todo/certs/scribe-collector.crt
-    else
-        echo Invalid parameter "$PARAM" for argument "scribe"
     fi
 elif [[ "$ARG" = "stg" ]]; then
     echo "setting stg environment variables"
