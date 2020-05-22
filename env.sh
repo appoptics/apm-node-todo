@@ -43,10 +43,15 @@ if [[ -z "$ARG" ]]; then
     echo
 elif [ "$ARG" = "java" -o "$ARG" = "bench" ]; then
     echo "setting environment variables for local java-collector using grpc"
-    if [[ -z "$PARAM" ]]; then
+    if [[ "$PARAM" = "grpc" ]]; then
         export APPOPTICS_REPORTER=ssl
         export APPOPTICS_COLLECTOR=localhost:12223
         export APPOPTICS_TRUSTEDPATH=$PWD/../../appoptics/ao-agent/test/java-collector/server-grpc.crt
+        unset TODO_TRUSTEDPATH
+    elif [ "$PARAM" = "thrift" ]; then
+        export APPOPTICS_REPORTER=ssl
+        export APPOPTICS_COLLECTOR=localhost:12222
+        export APPOPTICS_TRUSTEDPATH=$PWD/../../appoptics/ao-agent/test/java-collector/server-thrift.crt
         unset TODO_TRUSTEDPATH
     else
         echo Invalid parameter "$PARAM" for argument "java"

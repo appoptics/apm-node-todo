@@ -113,6 +113,17 @@ const [serviceKey, service] = sk.split(':');
 // finally host metrics configuration
 //
 
+// these are considered the "base" and are filled in at the end of initialization.
+// that way most of the application's base memory usage has been allocated. oboe
+// doesn't expose the event queue size (currently 10,000) so it's saved just after
+// initialization as an approximation of the value.
+const memBase = {
+  rss: 0,
+  heapUsed: 0,
+  heapTotal: 0,
+  eventQueueFree: 0,
+};
+
 //==================================================================================
 // if supplied, metrics must be a valid appoptics token (not service key) or metrics
 // won't be collected.
@@ -160,13 +171,29 @@ if (argv.metrics) {
       [`todo.${kAcctSecs}sec.cpuUser.perTransaction`]: stats.cpuUserPerTx,
       [`todo.${kAcctSecs}sec.cpuSystem.perTransaction`]: stats.cpuSystemPerTx,
       [`todo.${kAcctSecs}sec.apm.lastRate`]: stats.lastRate || 0,
-      [`todo.${kAcctSecs}sec.fillRequests`]: stats.fillRequests,
-      [`todo.${kAcctSecs}sec.copyFills`]: stats.copyFills,
-      [`todo.${kAcctSecs}sec.syncFills`]: stats.syncFills,
-      [`todo.${kAcctSecs}sec.bufferFills`]: stats.bufferFills,
+      //[`todo.${kAcctSecs}sec.fillRequests`]: stats.fillRequests,
+      //[`todo.${kAcctSecs}sec.copyFills`]: stats.copyFills,
+      //[`todo.${kAcctSecs}sec.syncFills`]: stats.syncFills,
+      //[`todo.${kAcctSecs}sec.bufferFills`]: stats.bufferFills,
     };
-    Object.assign(metrics, makeMetrics('todo.memory.', process.memoryUsage()));
+    const mu = process.memoryUsage();
+    Object.assign(metrics, makeMetrics('todo.memory.', mu));
     Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
+
+    // reset these to the lowest values seen. that's the effective
+    // base.
+    if (memBase.rss > mu.rss) memBase.rss = mu.rss;
+    if (memBase.heapTotal > mu.heapTotal) memBase.heapTotal = mu.heapTotal;
+    if (memBase.heapUsed > mu.heapUsed) memBase.heapUsed = mu.heapUsed;
+
+    const delta = {
+      rss: mu.rss - memBase.rss,
+      heapUsed: mu.heapUsed - memBase.heapUsed,
+      heapTotal: mu.heapTotal - memBase.heapTotal,
+    }
+
+    // take a stab at delta memory usage.
+    Object.assign(metrics, makeMetrics('todo.memory.delta.', delta));
 
     if (ao.addon) {
       if (ao.notifications && ao.addon.Notifier.get) {
@@ -174,8 +201,10 @@ if (argv.metrics) {
       }
       if (ao.addon.Event.getEventStats) {
         const es = ao.addon.Event.getEventStats();
-        metrics['todo.internal.eventCount'] = es.activeCount;
+        Object.assign(metrics, makeMetrics('todo.internal.eventCounts.', es));
       }
+      const oboeStats = ao.addon.Config.getStats();
+      metrics['todo.oboe.eventQueue'] = 10000 - oboeStats.eventQueueFree;
     }
     // skip this array-containing object for now.
     //Object.assign(metrics, makeMetrics('todo.memory.v8.heap.space.', v8.getHeapSpaceStatistics()));
@@ -306,6 +335,13 @@ const frameworkSelection = argv.f || 'express'
 let framework
 let config
 
+
+//==============================================================================
+//==============================================================================
+// get the server running ======================================================
+//==============================================================================
+//==============================================================================
+
 if (frameworkSelection === 'express') {
   framework = require('./frameworks/express')
   config = framework.init(options)
@@ -377,16 +413,16 @@ config.then(r => {
   }
   annotations.send(streamName, title, opts);
 
+  // set base levels now so there's data of some sort right away.
+  const m = process.memoryUsage();
+  memBase.rss = m.rss;
+  memBase.heapTotal = m.heapTotal;
+  memBase.heapUsed = m.heapUsed;
+
 }).catch(e => {
   console.error(`${frameworkSelection} framework initialization error`, e)
   process.exit(1)
 })
-
-//==============================================================================
-//==============================================================================
-// get the server running ======================================================
-//==============================================================================
-//==============================================================================
 
 // taken from appoptics test suite. these are not valid for any real
 // servers - only used for local testing.
@@ -395,25 +431,3 @@ const sslInfo = { // eslint-disable-line
   cert: '-----BEGIN CERTIFICATE-----\nMIICWDCCAcGgAwIBAgIJAPIHj8StWrbJMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV\nBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX\naWRnaXRzIFB0eSBMdGQwHhcNMTQwODI3MjM1MzUwWhcNMTQwOTI2MjM1MzUwWjBF\nMQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50\nZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKB\ngQCsJU2dO/K3oQEh9wo60VC2ajCZjIudc8cqHl9kKNKwc9lP4Rw9KWso/+vHhkp6\nCmx6Cshm6Hs00rPgZo9HmY//gcj0zHmNbagpmdvAmOudK8l5NpzdQwNROKN8EPoK\njlFEBMnZj136gF5YAgEN9ydcLtS2TeLmUG1Y3RR6ADjgaQIDAQABo1AwTjAdBgNV\nHQ4EFgQUTqL/t/yOtpAxKuC9zVm3PnFdRqAwHwYDVR0jBBgwFoAUTqL/t/yOtpAx\nKuC9zVm3PnFdRqAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOBgQBn1XAm\nAsVdXKr3aiZIgOmw5q+F1lKNl/CHtAPCqwjgntPGhW08WG1ojhCQcNaCp1yfPzpm\niaUwFrgiz+JD+KvxvaBn4pb95A6A3yObADAaAE/ZfbEA397z0RxwTSVU+RFKxzvW\nyICDpugdtxRjkb7I715EjO9R7LkSe5WGzYDp/g==\n-----END CERTIFICATE-----'
 }
 
-
-//const methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
-
-/*
-
-if (ao.setCustomTxNameFunction && (argv.c || argv.custom)) {
-  ao.setCustomTxNameFunction('express', customExpressTxName)
-}
-
-function customExpressTxName (req, res) {
-  // ignore global routes
-  if (req.route.path === '*') {
-    console.log('called for * route')
-    return ''
-  }
-  console.log('req.method', req.method, 'r.r.p', req.route.path, 'url', req.url, 'r.r.m', req.route.methods, 'ourl', req.originalUrl)
-  const customTxname = 'TODO-' + req.method + req.route.path
-  console.log('custom name: ', customTxname)
-  return customTxname
-}
-
-// */
