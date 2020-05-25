@@ -207,7 +207,7 @@ if (argv.metrics) {
     if (ao._stats) {
       addMetrics(metrics, 'todo.agent.event.', ao._stats.event);
       addMetrics(metrics, 'todo.agent.span.', ao._stats.span);
-      if (ao._stats.event.active >= 100) {
+      if (ao._stats.event.active >= Infinity && ao._stats.undeletedEvents) {
         const counts = {};
         for (const u of ao._stats.undeletedEvents) {
           const k = `${u[0].Layer}:${u[0].Label}`;
