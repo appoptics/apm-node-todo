@@ -29,9 +29,10 @@ if [[ -z "$APPOPTICS_LOG_SETTINGS" ]]; then
     export APPOPTICS_LOG_SETTINGS=error,warn,patching,debug
 fi
 
-# define this for all options
-export APPOPTICS_SERVICE_KEY=${token}:${AO_SERVICE_NAME:-node-todo-test}
-echo Defined service as $APPOPTICS_SERVICE_KEY
+if [[ -z "$APPOPTICS_SERVICE_KEY" ]]; then
+    export APPOPTICS_SERVICE_KEY=${token}:${AO_SERVICE_NAME:-node-todo-test}
+fi
+echo service is $APPOPTICS_SERVICE_KEY
 
 if [[ -z "$ARG" ]]; then
     echo "source this script with an argument of stg or prod. it"
@@ -54,7 +55,7 @@ elif [ "$ARG" = "java" -o "$ARG" = "bench" ]; then
         export APPOPTICS_TRUSTEDPATH=$PWD/../../appoptics/ao-agent/test/java-collector/server-thrift.crt
         unset TODO_TRUSTEDPATH
     else
-        echo Invalid parameter "$PARAM" for argument "java"
+        echo Invalid parameter "$PARAM" for argument "$ARG"
     fi
 elif [[ "$ARG" = "stg" ]]; then
     echo "setting stg environment variables"
