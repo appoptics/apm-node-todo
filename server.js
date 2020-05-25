@@ -109,9 +109,9 @@ if ('trace-mode' in argv && argv.t in modeMap) {
 const sk = process.env.APPOPTICS_SERVICE_KEY || 'xyzzy:xyzzy';
 const [serviceKey, service] = sk.split(':');
 
-//
+//========================================================================
 // finally host metrics configuration
-//
+//========================================================================
 
 // these are considered the "base" and are filled in at the end of initialization.
 // that way most of the application's base memory usage has been allocated. oboe
@@ -143,13 +143,14 @@ if (argv.metrics) {
     }
   )
 
-  function makeMetrics (prefix, object) {
+  function addMetrics (metrics, prefix, object) {
+    // first make the metrics based on object, using prefix
     const o = {};
     const properties = Object.keys(object);
     for (let i = 0; i < properties.length; i++) {
       o[prefix + properties[i]] = object[properties[i]];
     }
-    return o;
+    return Object.assign(metrics, o);
   }
 
   function addUrlMetrics (prefix, urlMetricsMap, metrics) {
@@ -177,8 +178,8 @@ if (argv.metrics) {
       //[`todo.${kAcctSecs}sec.bufferFills`]: stats.bufferFills,
     };
     const mu = process.memoryUsage();
-    Object.assign(metrics, makeMetrics('todo.memory.', mu));
-    Object.assign(metrics, makeMetrics('todo.memory.v8.heap.', v8.getHeapStatistics()));
+    addMetrics(metrics, 'todo.memory.', mu);
+    addMetrics(metrics, 'todo.memory.v8.heap.', v8.getHeapStatistics());
 
     // reset these to the lowest values seen. that's the effective
     // base.
@@ -193,7 +194,33 @@ if (argv.metrics) {
     }
 
     // take a stab at delta memory usage.
-    Object.assign(metrics, makeMetrics('todo.memory.delta.', delta));
+    addMetrics(metrics, 'todo.memory.delta.', delta);
+
+    // eventsCreated: 0,       // total events created
+    // eventsActive: 0,        // event.send() has not been called
+
+    // spansCreated: 0,        // total spans created
+    // topSpansCreated: 0,     // total entry spans (traces) created
+    // topSpansActive: 0,      // topSpans: span.enter() called but not span.exit()
+    // otherSpansActive: 0,    // not-topSpan: span.enter() called but not span.exit()
+
+    if (ao._stats) {
+      addMetrics(metrics, 'todo.agent.event.', ao._stats.event);
+      addMetrics(metrics, 'todo.agent.span.', ao._stats.span);
+      if (ao._stats.event.active >= 100) {
+        const counts = {};
+        for (const u of ao._stats.undeletedEvents) {
+          const k = `${u[0].Layer}:${u[0].Label}`;
+          if (!(k in counts)) {
+            counts[k] = 1;
+          } else {
+            counts[k] += 1;
+          }
+        }
+        console.log(counts);
+        process.exit(1);
+      }
+    }
 
     if (ao.addon) {
       if (ao.notifications && ao.addon.Notifier.get) {
@@ -201,15 +228,15 @@ if (argv.metrics) {
       }
       if (ao.addon.Event.getEventStats) {
         const es = ao.addon.Event.getEventStats();
-        Object.assign(metrics, makeMetrics('todo.internal.eventCounts.', es));
+        addMetrics(metrics, 'todo.aob.eventCounts.', es);
       }
       const oboeStats = ao.addon.Config.getStats();
       metrics['todo.oboe.eventQueue'] = 10000 - oboeStats.eventQueueFree;
     }
     // skip this array-containing object for now.
-    //Object.assign(metrics, makeMetrics('todo.memory.v8.heap.space.', v8.getHeapSpaceStatistics()));
+    //addMetrics(metrics, 'todo.memory.v8.heap.space.', v8.getHeapSpaceStatistics());
     //const spanMetrics = ao.Span.getMetrics('clear');
-    //Object.assign(metrics, makeMetrics('todo.span.', spanMetrics));
+    //addMetrics(metrics, 'todo.span.', spanMetrics);
     //metrics['todo.span.msPerTopSpan'] = spanMetrics.topSpanTime / 1e3 / spanMetrics.topSpanExits;
     //metrics['todo.span.msPerHttpSpan'] = spanMetrics.httpSpanTime / 1e3 / spanMetrics.httpSpanCount;
     //metrics['todo.span.eventsPerSpan'] = spanMetrics.topSpanEvents / spanMetrics.topSpanExits;
