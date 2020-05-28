@@ -204,9 +204,17 @@ if (argv.metrics) {
     // topSpansActive: 0,      // topSpans: span.enter() called but not span.exit()
     // otherSpansActive: 0,    // not-topSpan: span.enter() called but not span.exit()
 
-    if (ao._stats) {
+    //
+    // N.B. many metrics are protected by checks to see if they exist so todo
+    // remains compatible with previous versions of the agent that don't have
+    // those metrics.
+    //
+
+    if (ao._stats && ao._stats.event) {
       addMetrics(metrics, 'todo.agent.event.', ao._stats.event);
       addMetrics(metrics, 'todo.agent.span.', ao._stats.span);
+      // change Infinity to log counts at some number of
+      // active events.
       if (ao._stats.event.active >= Infinity && ao._stats.undeletedEvents) {
         const counts = {};
         for (const u of ao._stats.undeletedEvents) {
@@ -223,9 +231,6 @@ if (argv.metrics) {
     }
 
     if (ao.addon) {
-      if (ao.notifications && ao.addon.Notifier.get) {
-        metrics['todo.notifications.itemCount'] = ao.addon.Notifier.get(4);
-      }
       if (ao.addon.Event.getEventStats) {
         const es = ao.addon.Event.getEventStats();
         addMetrics(metrics, 'todo.aob.eventCounts.', es);
