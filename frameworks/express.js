@@ -158,7 +158,9 @@ exports.init = function (options) {
 
   app.all('*', function allRoutes (req, res, next) {
     // count each request
-    accounting.count()
+    accounting.count();
+    // don't keep session alive
+    res.setHeader('Connection', 'close');
     next()
   })
 
@@ -336,11 +338,12 @@ exports.init = function (options) {
   const memory = new Requests.Memory()
 
   app.get('/memory/:what?', function rss (req, res) {
-    const r = memory.get(req.params.what || 'rss')
-    if (r.status && r.status !== 200) {
-      res.statusCode = r.status
-    }
-    res.json(r)
+    memory.get(req.params.what || 'rss').then(r => {
+      if (r.status && r.status !== 200) {
+        res.statusCode = r.status;
+      }
+      res.json(r);
+    })
   })
 
   //
