@@ -232,7 +232,7 @@ if (argv.metrics) {
 
     if (ao.addon) {
       if (ao.addon.Event.getEventStats) {
-        const es = ao.addon.Event.getEventStats();
+        const es = ao.addon.Event.getEventStats(0x1);
         addMetrics(metrics, 'todo.aob.eventCounts.', es);
       }
       const oboeStats = ao.addon.Config.getStats();
