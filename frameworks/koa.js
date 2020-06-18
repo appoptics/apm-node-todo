@@ -105,14 +105,14 @@ exports.init = function (options) {
 
   const router = new KoaRouter()
 
-  //
+  // count each request
   app.use(async (ctx, next) => {
     accounting.count()
     return next()
   })
 
   router.get('/accounting', async function (ctx, next) {
-    ctx.body = accounting.get()
+    ctx.body = accounting.get(accounting.interval);
     return next()
   })
 
@@ -121,8 +121,8 @@ exports.init = function (options) {
   //==============================================================================
   const config = new Requests.Config()
 
-  router.get('/config', async function getCfg (ctx) {
-    const r = config.get()
+  router.get('/config/:what?', async function getCfg (ctx) {
+    const r = config.get(ctx.params.what)
     if (r.status && r.status !== 200) {
       ctx.status = r.status
     }
