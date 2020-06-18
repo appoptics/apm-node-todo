@@ -47,6 +47,11 @@ see bmacnaughton/multiload for a test driver that can perform transactions at sp
 ## todo for todo
 
 - handle mongodb deprecations warnings - http://mongodb.github.io/node-mongodb-native/3.3/reference/unified-topology/
+- clean up lib/requests/accounting.js - specifically the time-based accounting can really only handle
+one invocation (that's all that's done now) but has some not-to-be-used hooks to enable multiple
+time-bases to be accumulated simultaneously.
+- capture request count on interval. basically accounting needs to be rethought and fixed to be
+more consistent with averages, interval values, and e-moving-avgs.
 
 ## License
 
