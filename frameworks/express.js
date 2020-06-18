@@ -158,13 +158,15 @@ exports.init = function (options) {
 
   app.all('*', function allRoutes (req, res, next) {
     // count each request
-    accounting.count()
+    accounting.count();
+    // don't keep session alive
+    res.setHeader('Connection', 'close');
     next()
   })
 
   app.get('/accounting', function getAccounting (req, res) {
     //process.nextTick(() => res.json(accounting.get()))
-    res.json(accounting.get())
+    res.json(accounting.get(accounting.interval));
   })
 
 
@@ -189,6 +191,17 @@ exports.init = function (options) {
     res.json(r)
   })
 
+  // stats
+  const stats = new Requests.Stats();
+  app.get('/stats', function getStats (req, res) {
+    const r = stats.get();
+    if (r.status && r.status !== 200) {
+      res.statusCode = r.status;
+    }
+    res.json(r);
+  })
+
+  // oboe
   const oboe = new Requests.Oboe()
 
   app.get('/oboe/:what', function getOboe (req, res) {
@@ -202,6 +215,7 @@ exports.init = function (options) {
     res.json(r)
   })
 
+  // log a message
   app.get('/log/:level/:string', function doLog (req, res) {
     const level = req.params.level;
     if (level !== 'error' && level !== 'warn' && level !== 'info') {
@@ -213,7 +227,31 @@ exports.init = function (options) {
     res.end();
   })
 
+  // perf hooks
+  const perfhooks = new Requests.PerfHooks();
 
+  app.put('/perftrace/enable/:what', function perfhookEnable (req, res) {
+    const r = perfhooks.enable(req.params.what);
+    res.statusCode = r.status || 200;
+    res.json(r);
+    res.end();
+  });
+
+  app.put('/perftrace/disable/:what', function perfhookDisable (req, res) {
+    const r = perfhooks.disable(req.params.what);
+    res.statusCode = r.status || 200;
+    res.json(r);
+    res.end();
+  });
+
+  app.get('/perftrace/fetch/:what', function perfhookFetch (req, res) {
+    const r = perfhooks.fetch(req.params.what);
+    res.statusCode = r.status || 200;
+    res.json(r);
+    res.end();
+  });
+
+  // process
   app.get('/process/:what/:filter?', async function getProcessInfo (req, res) {
     // need to make process request module but until then.
     if (req.params.what !== 'env') {
@@ -300,11 +338,12 @@ exports.init = function (options) {
   const memory = new Requests.Memory()
 
   app.get('/memory/:what?', function rss (req, res) {
-    const r = memory.get(req.params.what || 'rss')
-    if (r.status && r.status !== 200) {
-      res.statusCode = r.status
-    }
-    res.json(r)
+    memory.get(req.params.what || 'rss').then(r => {
+      if (r.status && r.status !== 200) {
+        res.statusCode = r.status;
+      }
+      res.json(r);
+    })
   })
 
   //
@@ -486,7 +525,7 @@ exports.init = function (options) {
       options.headers = {'X-Trace': req.headers['X-Trace']}
     }
 
-    const requestor = (options.protocol === 'http' ? http : https).request;
+    const requestor = (options.protocol === 'http:' ? http : https).request;
 
     // now do the outbound request and get the inbound response
     const oreq = requestor(options, function (ires) {
@@ -592,6 +631,8 @@ exports.init = function (options) {
   const promises = []
   let httpStatus
   let httpsStatus
+  let httpServer;
+  let httpsServer;
 
   // it's kind of funky but let the caller decide whether a failure to
   // listen on a port is OK or not. that's why the promises are always
@@ -603,7 +644,7 @@ exports.init = function (options) {
       }
       resolve(args)
     }
-    app.listen(httpPort, host).on('listening', x).on('error', x)
+    httpServer = app.listen(httpPort, host).on('listening', x).on('error', x);
   })
   promises.push(p1)
 
@@ -615,7 +656,7 @@ exports.init = function (options) {
         }
         resolve(args)
       }
-      app.listen(httpsPort, host).on('listening', x).on('error', x)
+      httpsServer = app.listen(httpsPort, host).on('listening', x).on('error', x);
     })
     promises.push(p2)
   }
@@ -624,7 +665,9 @@ exports.init = function (options) {
     return {
       server: app,
       httpStatus,
+      httpServer,
       httpsStatus,
+      httpsServer,
     }
   })
 
