@@ -163,8 +163,9 @@ if (argv.metrics) {
       metrics[prefix + url + '.events'] = m.events / m.count;
     }
   }
+  let prevTopSpansExited = 0;
 
-  function getMetrics () {
+  function getMetrics (deltaTime) {
     const stats = accounting.get(kAcctSecs);
     const metrics = {
       [`todo.${kAcctSecs}sec.total.transactions`]: stats.totalAverages,
@@ -213,11 +214,15 @@ if (argv.metrics) {
     if (ao._stats && ao._stats.event) {
       addMetrics(metrics, 'todo.agent.event.', ao._stats.event);
       addMetrics(metrics, 'todo.agent.span.', ao._stats.span);
+      const topSpansExited = ao._stats.span.topSpansExited - prevTopSpansExited;
+      prevTopSpansExited = ao._stats.span.topSpansExited;
+      metrics['todo.agent.span.tracesPerSecond'] = topSpansExited / (deltaTime / 1000);
+
       // change Infinity to log counts at some number of
       // active events.
-      if (ao._stats.event.active >= Infinity && ao._stats.undeletedEvents) {
+      if (ao._stats.event.active >= Infinity && ao._stats.unsentEvents) {
         const counts = {};
-        for (const u of ao._stats.undeletedEvents) {
+        for (const u of ao._stats.unsentEvents) {
           const k = `${u[0].Layer}:${u[0].Label}`;
           if (!(k in counts)) {
             counts[k] = 1;
@@ -298,25 +303,25 @@ if (argv.gc) {
 // if headdumps are requested set them up too. the argument is in minutes so convert to
 // milliseconds for setInterval().
 //=====================================================================================
-let hdInterval; // eslint-disable-line no-unused-vars
-if (argv['heap-dump']) {
-  const mkdirp = require('mkdirp');
-  const heapdump = require('heapdump');
-  mkdirp('./heapdump', function (err) {
-    if (err) {
-      console.error('cannot mkdirp ./heapdump');
-      return;
-    }
-    hdInterval = setInterval(function () {
-      // make a more intelligible filename
-      const ts = new Date().toISOString();
-      const filename = `./heapdump/heapdump-${ts}.heapsnapshot`;
-      heapdump.writeSnapshot(filename, function (err, filename) {
-        // don't do anything right now.
-      })
-    }, argv['heap-dump'] * 60 * 1000);
-  })
-}
+//let hdInterval; // eslint-disable-line no-unused-vars
+//if (argv['heap-dump']) {
+//  const mkdirp = require('mkdirp');
+//  const heapdump = require('heapdump');
+//  mkdirp('./heapdump', function (err) {
+//    if (err) {
+//      console.error('cannot mkdirp ./heapdump');
+//      return;
+//    }
+//    hdInterval = setInterval(function () {
+//      // make a more intelligible filename
+//      const ts = new Date().toISOString();
+//      const filename = `./heapdump/heapdump-${ts}.heapsnapshot`;
+//      heapdump.writeSnapshot(filename, function (err, filename) {
+//        // don't do anything right now.
+//      })
+//    }, argv['heap-dump'] * 60 * 1000);
+//  })
+//}
 
 //
 // finally get the ports needed
